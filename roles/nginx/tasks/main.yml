@@ -1,0 +1,77 @@
+---
+- name: Install Nginx and Certbot
+  apt:
+    name:
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+      - python3-certbot-dns-cloudflare
+    state: present
+    update_cache: yes
+
+- name: Create webroot directory
+  file:
+    path: /var/www/aperosbros
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+- name: Copy Cloudflare credentials
+  template:
+    src: cloudflare.ini.j2
+    dest: /etc/cloudflare.ini
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Obtain wildcard certificate
+  command: >
+    certbot certonly
+    --dns-cloudflare
+    --dns-cloudflare-credentials /etc/cloudflare.ini
+    -d aperosbros.net
+    -d "*.aperosbros.net"
+    --non-interactive
+    --agree-tos
+    --email {{ vault_certbot_email }}
+  args:
+    creates: /etc/letsencrypt/live/aperosbros.net/fullchain.pem
+
+- name: Deploy Nginx vhost configs
+  template:
+    src: "{{ item }}.conf.j2"
+    dest: "/etc/nginx/sites-available/{{ item }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - aperosbros.net
+    - pve
+    - transmission
+    - sinsap
+    - opnsense
+    - ollama
+    - default
+  notify: Reload Nginx
+
+- name: Enable vhosts
+  file:
+    src: "/etc/nginx/sites-available/{{ item }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ item }}.conf"
+    state: link
+  loop:
+    - aperosbros.net
+    - pve
+    - transmission
+    - sinsap
+    - opnsense
+    - ollama
+    - default
+  notify: Reload Nginx
+
+- name: Remove default Nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload Nginx

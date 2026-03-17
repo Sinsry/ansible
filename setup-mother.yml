@@ -1,0 +1,6 @@
+---
+- name: Setup mother
+  hosts: mother
+  become: true
+  roles:
+    - nginx
