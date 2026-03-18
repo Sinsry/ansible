@@ -5,6 +5,10 @@ server {
     ssl_certificate /etc/letsencrypt/live/aperosbros.net/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/aperosbros.net/privkey.pem;
 
+    allow 192.168.0.0/16;
+    allow 10.3.0.0/16;
+    deny all;
+
     root /var/www/aperosbros;
 
     location / {
