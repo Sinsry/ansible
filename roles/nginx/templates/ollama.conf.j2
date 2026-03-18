@@ -1,6 +1,6 @@
 map $http_authorization $auth_ok {
     default 0;
-    "Bearer {{ ollama_token }}" 1;
+    "Bearer {{ vault_ollama_token }}" 1;
 }
 
 server {
