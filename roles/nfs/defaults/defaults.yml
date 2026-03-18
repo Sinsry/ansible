@@ -1,0 +1,16 @@
+---
+nfs_server: "192.168.1.2"
+
+nfs_mounts:
+  - name: Data
+  - name: Torrents
+
+nfs_options:
+  - _netdev
+  - v4
+  - x-systemd.automount
+  - x-systemd.mount-timeout=1s
+  - timeo=14
+  - retrans=2
+  - nolock
+  - soft
